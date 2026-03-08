@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="key_target_language_code">targetLanguageCode</string>
+    <string name="key_translated_list_file">translatedList_file</string>
+    <string name="key_untranslated_list_file">untranslatedList_file</string>
+
+    <string name="app_name">Translate Plugin</string>
+    <string name="select_target_lang">Select target language</string>
+    <string name="stop">Stop</string>
+    <string name="save">Save</string>
+    <string name="close">Close</string>
+    <string name="save_and_close">Save &amp; Close</string>
+    <string name="translating">Translating…</string>
+    <string name="translated">Translated</string>
+    <string name="translated_format">%d strings translated</string>
+    <string name="failed_format">%d strings failed</string>
+    <string name="untranslated_format">%d strings untranslated</string>
+    <string name="hint_translation">Translated</string>
+
+    <string name="error_no_string_totranslate">No strings need translation.</string>
+    <string name="error_no_string_tosave">No translated strings to save.</string>
+    <string name="general_error">Error: %s</string>
+    <string name="save_succeed_tip">%d strings saved successfully.</string>
+    <string name="save_translation_title">Save translation?</string>
+    <string name="save_translation_msg">Translation is not saved yet. Save before continuing?</string>
+    <string name="string_notsaved_msg">%d strings discarded.</string>
+    <string name="permissions">Storage permission required!</string>
+    <string name="error">Error, Check internet connection.</string>
+    <string name="no_strings_to_translate">No strings to translate.</string>
+
+    <string name="start">Start</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="service">Translation service</string>
+    <string name="source">Source language</string>
+    <string name="target">Target language</string>
+</resources>

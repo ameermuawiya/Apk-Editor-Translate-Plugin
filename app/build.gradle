@@ -1,0 +1,28 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.gmail.heagoo.apkeditor.translate'
+    compileSdk 36
+    defaultConfig {
+        applicationId "com.gmail.heagoo.apkeditor.translate"
+        minSdk 21
+        targetSdk 36
+        versionCode 1
+        versionName "Free-Palastine"
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    /*
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs += ["-Xlint:all"] 
+    }
+    */
+    
+}
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.14.0-alpha09'
+}
