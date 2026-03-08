@@ -33,8 +33,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.listitem.ListItemLayout;
-
 import com.google.android.material.textfield.TextInputEditText;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
+/*
  * Main activity for string translation workflow.
  */
 public class TranslateActivity extends AppCompatActivity implements View.OnClickListener {
@@ -90,33 +90,57 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     private List<LanguageItem> googleLangList = new ArrayList<>();
     private List<LanguageItem> yandexLangList = new ArrayList<>();
 
+    /*
+     * Model class representing a language configuration item.
+     */
     private static class LanguageItem {
         final String code;
         final String name;
 
+        /*
+         * Constructor for initializing language properties.
+         */
         LanguageItem(String code, String name) {
             this.code = code;
             this.name = name;
         }
     }
 
+    /*
+     * Adapter for handling translation string items in the RecyclerView.
+     */
     private class TranslationAdapter extends RecyclerView.Adapter<TranslationAdapter.TranslationViewHolder> {
         private final List<TranslateItem> items;
 
+        /*
+         * Constructor to initialize the adapter with data.
+         */
         TranslationAdapter(List<TranslateItem> items) {
             this.items = items;
         }
 
+        /*
+         * Returns the complete list of current items.
+         */
         public List<TranslateItem> getItems() {
             return items;
         }
 
+        /*
+         * Adds a newly translated item and updates the previous item to refresh its segmented shape.
+         */
         public void addItem(TranslateItem item) {
             int pos = items.size();
             items.add(item);
             notifyItemInserted(pos);
+            if (pos > 0) {
+                notifyItemChanged(pos - 1);
+            }
         }
 
+        /*
+         * Inflates the layout for a single translation item.
+         */
         @NonNull
         @Override
         public TranslationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -125,6 +149,9 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
             return new TranslationViewHolder(view);
         }
 
+        /*
+         * Binds data to the view holder and sets up listeners for user interactions.
+         */
         @Override
         public void onBindViewHolder(@NonNull TranslationViewHolder holder, int position) {
             int adapterPosition = holder.getBindingAdapterPosition();
@@ -142,10 +169,21 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
             holder.translatedValue.setText(item.translatedValue);
 
             holder.textWatcher = new TextWatcher() {
+                /*
+                 * Invoked before text is changed.
+                 */
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                /*
+                 * Invoked when text is changing.
+                 */
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+                /*
+                 * Updates the model with the new translated text.
+                 */
                 @Override
                 public void afterTextChanged(Editable s) {
                     item.translatedValue = s.toString();
@@ -179,6 +217,9 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
                         userAgent,
                         googleConfigMap,
                         new TranslationEngine.TranslationCallback() {
+                            /*
+                             * Applies formatting and sets the text on translation success.
+                             */
                             @Override
                             public void onSuccess(String result) {
                                 String formatted = formatTranslatedString(result);
@@ -186,6 +227,9 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
                                 holder.btnRetry.setEnabled(true);
                             }
 
+                            /*
+                             * Displays the error message on translation failure.
+                             */
                             @Override
                             public void onError(String errorMsg) {
                                 showToast(errorMsg);
@@ -195,11 +239,17 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
             });
         }
 
+        /*
+         * Returns the total count of items in the list.
+         */
         @Override
         public int getItemCount() {
             return items.size();
         }
 
+        /*
+         * ViewHolder class for holding translation view elements.
+         */
         class TranslationViewHolder extends RecyclerView.ViewHolder {
             TextView stringName;
             TextView originValue;
@@ -208,6 +258,9 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
             MaterialButton btnReset;
             TextWatcher textWatcher;
 
+            /*
+             * Constructor that finds and assigns the views from the layout.
+             */
             TranslationViewHolder(@NonNull View itemView) {
                 super(itemView);
                 stringName = itemView.findViewById(R.id.string_name);
@@ -220,7 +273,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Initializes the activity, loads intent data, sets up preferences and starts permission check.
+     * Initializes activity state, reads intents, and starts the permission workflow.
      */
     @Override
     protected void onCreate(Bundle bundle) {
@@ -229,12 +282,12 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
         Bundle extras = (intent != null) ? intent.getExtras() : null;
 
         if (extras != null
-                && extras.containsKey(getString(R.string.key_target_language_code))
-                && extras.containsKey(getString(R.string.key_translated_list_file))) {
-            this.targetLanguageCode = extras.getString(getString(R.string.key_target_language_code));
+                && extras.containsKey("targetLanguageCode")
+                && extras.containsKey("translatedList_file")) {
+            this.targetLanguageCode = extras.getString("targetLanguageCode");
             this.targetLanguage = formatLanguageCode();
-            this.translatedListFilePath = extras.getString(getString(R.string.key_translated_list_file));
-            this.untranslatedListFilePath = extras.getString(getString(R.string.key_untranslated_list_file));
+            this.translatedListFilePath = extras.getString("translatedList_file");
+            this.untranslatedListFilePath = extras.getString("untranslatedList_file");
             this.isDataValid = true;
         } else {
             this.isDataValid = false;
@@ -255,7 +308,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Resumes the activity and checks if storage permission was granted after settings screen.
+     * Resumes the activity and verifies if the permission flow has been completed.
      */
     @Override
     protected void onResume() {
@@ -271,30 +324,30 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Saves current state to restore after configuration changes.
+     * Saves file paths and language codes to survive orientation changes.
      */
     @Override
     protected void onSaveInstanceState(@NonNull Bundle bundle) {
-        bundle.putString(getString(R.string.key_target_language_code), this.targetLanguageCode);
-        bundle.putString(getString(R.string.key_translated_list_file), this.translatedListFilePath);
-        bundle.putString(getString(R.string.key_untranslated_list_file), this.untranslatedListFilePath);
+        bundle.putString("targetLanguageCode", this.targetLanguageCode);
+        bundle.putString("translatedList_file", this.translatedListFilePath);
+        bundle.putString("untranslatedList_file", this.untranslatedListFilePath);
         super.onSaveInstanceState(bundle);
     }
 
     /*
-     * Restores saved state after configuration changes.
+     * Restores saved file paths and language codes after orientation changes.
      */
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle bundle) {
         super.onRestoreInstanceState(bundle);
-        this.targetLanguageCode = bundle.getString(getString(R.string.key_target_language_code));
+        this.targetLanguageCode = bundle.getString("targetLanguageCode");
         this.targetLanguage = formatLanguageCode();
-        this.translatedListFilePath = bundle.getString(getString(R.string.key_translated_list_file));
-        this.untranslatedListFilePath = bundle.getString(getString(R.string.key_untranslated_list_file));
+        this.translatedListFilePath = bundle.getString("translatedList_file");
+        this.untranslatedListFilePath = bundle.getString("untranslatedList_file");
     }
 
     /*
-     * Handles permission result and continues initialization if granted.
+     * Handles the callback for legacy permission requests.
      */
     @Override
     public void onRequestPermissionsResult(int code, @NonNull String[] perms, @NonNull int[] results) {
@@ -317,7 +370,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Centralized click handler for stop/save button.
+     * Click listener for handling UI button actions globally.
      */
     @Override
     public void onClick(View view) {
@@ -333,7 +386,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Checks storage permission based on Android version and starts flow accordingly.
+     * Verifies storage permission and requests it if not granted based on Android version.
      */
     private void checkStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -351,7 +404,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Requests legacy storage permissions for Android versions below R.
+     * Requests multiple storage permissions for legacy Android devices.
      */
     private void requestLegacyPermissions(Activity activity, String[] strArr) {
         ArrayList<String> list = new ArrayList<>();
@@ -368,17 +421,13 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Starts main initialization after data validation and permission check.
+     * Starts data loading and shows dialog after successful permission checks.
      */
     private void startInitialization() {
         if (isDataValid) {
             loadSerializedData();
             populateInitialItems(this.translatedItems);
-            if (this.sharedPrefs.getBoolean("skip_dialog", false)) {
-                prepareAndStartTranslation();
-            } else {
-                showConfigurationDialog();
-            }
+            showConfigurationDialog();
         } else {
             populateInitialItems(new ArrayList<>());
             showToast(getString(R.string.no_strings_to_translate));
@@ -386,7 +435,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Loads serialized translated and untranslated items from files.
+     * Reads translated and untranslated list items from the local storage files.
      */
     private void loadSerializedData() {
         this.translatedItems = readObjectFromFile(this.translatedListFilePath);
@@ -394,7 +443,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Sets up RecyclerView, layouts, and initial adapter with provided list.
+     * Configures the layout and adapter for the main RecyclerView list.
      */
     private void populateInitialItems(List<TranslateItem> list) {
         this.recyclerView = findViewById(R.id.recycler_view);
@@ -413,7 +462,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Shows the translation service and language selection dialog.
+     * Creates and displays the configuration dialog for selecting engine and languages.
      */
     private void showConfigurationDialog() {
         if (googleLangList.isEmpty()) loadLanguageLists();
@@ -433,6 +482,9 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
         updateLanguageSpinners(spinnerSourceLang, spinnerTargetLang, this.isGoogleService);
 
         spinnerService.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            /*
+             * Updates selected translation engine and re-populates language options.
+             */
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 sharedPrefs.edit().putInt("service", position).apply();
@@ -440,6 +492,9 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
                 updateLanguageSpinners(spinnerSourceLang, spinnerTargetLang, isGoogleService);
             }
 
+            /*
+             * Handles scenario where no engine is selected.
+             */
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
@@ -467,18 +522,18 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Updates source and target language spinners based on selected service.
+     * Switches adapter items for spinners based on the selected translation engine.
      */
     private void updateLanguageSpinners(Spinner source, Spinner target, boolean isGoogle) {
         List<LanguageItem> list = isGoogle ? googleLangList : yandexLangList;
         List<String> names = new ArrayList<>();
         for (LanguageItem item : list) names.add(item.name);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_dropdown_item, names);
 
-        source.setAdapter(adapter);
-        target.setAdapter(adapter);
+        source.setAdapter(spinnerAdapter);
+        target.setAdapter(spinnerAdapter);
 
         String code = formatLanguageCode();
         int index = findLanguageIndex(list, code);
@@ -486,7 +541,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Loads language lists from string resources into memory.
+     * Retrieves parsing formats from arrays and builds the available language lists.
      */
     private void loadLanguageLists() {
         googleLangList = parseLanguages(R.array.google_languages);
@@ -494,7 +549,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Parses paired code|name strings into LanguageItem objects.
+     * Transforms resource arrays into distinct language models based on delimiter.
      */
     private List<LanguageItem> parseLanguages(int resId) {
         String[] data = getResources().getStringArray(resId);
@@ -509,7 +564,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Finds the index of a language code in the provided list.
+     * Locates the array index for a given language code.
      */
     private int findLanguageIndex(List<LanguageItem> list, String code) {
         if (code == null) return 1;
@@ -520,7 +575,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Formats the target language code received from intent.
+     * Reformats code rules and transforms it back to standard locale casing.
      */
     private String formatLanguageCode() {
         if (targetLanguageCode == null || targetLanguageCode.isEmpty()) return "en";
@@ -535,7 +590,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Prepares UI for translation and starts the batch process.
+     * Resets counters, prepares views, and executes batch translation logic.
      */
     private void prepareAndStartTranslation() {
         this.translatingMessageTextView.setText(R.string.translating);
@@ -556,7 +611,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Starts the background translation using TranslationEngine for all items.
+     * Prepares configuration and iterates list to execute background translations.
      */
     private void startBatchTranslation() {
         isTaskCancelled = false;
@@ -566,6 +621,9 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
                 this.userAgent,
                 bypass,
                 new TranslationEngine.ConfigCallback() {
+                    /*
+                     * Runs list processing once Google configuration is fully gathered.
+                     */
                     @Override
                     public void onConfigSuccess(Map<String, String> config) {
                         if (googleConfigMap.isEmpty() && !config.isEmpty()) {
@@ -590,12 +648,18 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
                                         userAgent,
                                         googleConfigMap,
                                         new TranslationEngine.TranslationCallback() {
+                                            /*
+                                             * Handles successful translation output formatting and insertion.
+                                             */
                                             @Override
                                             public void onSuccess(String result) {
                                                 item.translatedValue = formatTranslatedString(result);
                                                 addTranslatedItem(item);
                                             }
 
+                                            /*
+                                             * Handles failed translation by sending empty or original values.
+                                             */
                                             @Override
                                             public void onError(String errorMsg) {
                                                 addTranslatedItem(item);
@@ -605,6 +669,9 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
                         }
                     }
 
+                    /*
+                     * Triggers process stop due to failure in fetching network configuration.
+                     */
                     @Override
                     public void onConfigError(String errorMsg) {
                         showToast(getString(R.string.error));
@@ -614,7 +681,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Adds a translated item to the adapter and updates progress counters.
+     * Adds translated record into adapter and dynamically updates UI count status.
      */
     private void addTranslatedItem(TranslateItem translateItem) {
         this.adapter.addItem(translateItem);
@@ -635,7 +702,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Shows final summary after translation completes or is stopped.
+     * Computes the final text strings for translated counts and sets UI end states.
      */
     private void showCompletionSummary() {
         this.isTranslationFinished = true;
@@ -663,7 +730,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Triggers stop and shows completion summary.
+     * Halts internal engine execution flows and forces final completion display.
      */
     private void triggerStopProcess() {
         isTaskCancelled = true;
@@ -671,7 +738,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Extracts valid translations from adapter and saves them.
+     * Grabs completed adapter rows and initiates final saving process for valid entries.
      */
     private void extractAndSaveTranslations() {
         ArrayList<TranslateItem> arrayList = new ArrayList<>();
@@ -689,27 +756,27 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Saves translated list to file and sets result for parent activity.
+     * Executes list serialization and returns intent bundle to original sender.
      */
     private void saveTranslationsAndFinish(List<TranslateItem> list) {
         if (isDataValid) {
             writeObjectToFile(this.translatedListFilePath, list);
             Intent intent = new Intent();
-            intent.putExtra(getString(R.string.key_target_language_code), this.targetLanguageCode);
-            intent.putExtra(getString(R.string.key_translated_list_file), this.translatedListFilePath);
+            intent.putExtra("targetLanguageCode", this.targetLanguageCode);
+            intent.putExtra("translatedList_file", this.translatedListFilePath);
             setResult(RESULT_OK, intent);
         }
     }
 
     /*
-     * Shows a short toast message.
+     * Outputs basic string text to application context via a Toast block.
      */
     private void showToast(String str) {
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
     }
 
     /*
-     * Reads serialized List<TranslateItem> from file safely.
+     * Creates stream objects and securely reads data blocks from internal paths.
      */
     @SuppressWarnings("unchecked")
     private List<TranslateItem> readObjectFromFile(String str) {
@@ -727,7 +794,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Writes object to file safely.
+     * Opens write channels and passes serialized blocks back to internal paths.
      */
     private void writeObjectToFile(String str, Object obj) {
         if (str == null || str.isEmpty()) return;
@@ -744,7 +811,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Closes Closeable resource ignoring exceptions.
+     * Forcefully dismisses open streams and catches generic fallback exceptions.
      */
     private void closeResource(Closeable closeable) {
         if (closeable != null) {
@@ -755,7 +822,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Formats translation text explicitly modifying format specifiers.
+     * Analyzes raw translation blocks and repairs standard Android string arguments.
      */
     private String formatTranslatedString(String str) {
         if (str == null) return null;
@@ -782,7 +849,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     }
 
     /*
-     * Ensures strings matching system formatting attributes bypass translations safely.
+     * Prevents system string blocks and core XML commands from undergoing translation.
      */
     private boolean isResourceOrFormat(String str) {
         String[] resources = {

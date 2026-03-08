@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="key_target_language_code">targetLanguageCode</string>
-    <string name="key_translated_list_file">translatedList_file</string>
-    <string name="key_untranslated_list_file">untranslatedList_file</string>
-
     <string name="app_name">Translate Plugin</string>
     <string name="select_target_lang">Select target language</string>
     <string name="stop">Stop</string>
