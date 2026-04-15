@@ -54,8 +54,6 @@ Provide a clean, fast, and reliable translation experience that integrates natur
 
 ## License
 
-This repository includes a license file in the root directory.
-
 See the file below for full license information.
 
 ```
